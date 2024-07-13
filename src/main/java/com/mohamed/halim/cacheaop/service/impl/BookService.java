@@ -1,12 +1,12 @@
 package com.mohamed.halim.cacheaop.service.impl;
 
 import com.mohamed.halim.cacheaop.aop.Cached;
+import com.mohamed.halim.cacheaop.aop.CachedEvict;
 import com.mohamed.halim.cacheaop.dto.BookDto;
 import com.mohamed.halim.cacheaop.mapper.BookMapper;
 import com.mohamed.halim.cacheaop.repo.BookRepo;
 import com.mohamed.halim.cacheaop.service.CrudService;
 import lombok.RequiredArgsConstructor;
-import org.mapstruct.Mapper;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -32,6 +32,7 @@ public class BookService implements CrudService<BookDto> {
     }
 
     @Override
+    @CachedEvict(prefix = "book", key = "id")
     public BookDto update(Long id, BookDto e) {
         var entity = mapper.fromDto(e);
         entity.setId(id);
