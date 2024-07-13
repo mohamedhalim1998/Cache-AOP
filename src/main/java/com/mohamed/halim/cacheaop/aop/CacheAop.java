@@ -2,6 +2,7 @@ package com.mohamed.halim.cacheaop.aop;
 
 import com.mohamed.halim.cacheaop.service.CacheManager;
 import lombok.RequiredArgsConstructor;
+import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.aspectj.lang.JoinPoint;
@@ -61,13 +62,23 @@ public class CacheAop {
             var key = Arrays.stream(args).map(Object::toString).reduce("", (s1, s2) -> s1 + "::" + s2);
             builder.append(key);
         } else {
-            var paramMap = new HashMap<String, String>();
+            var paramMap = new HashMap<String, Object>();
             for (int i = 0; i < args.length; i++) {
-                paramMap.put(method.getParameters()[i].getName(), args[i].toString());
+                paramMap.put(method.getParameters()[i].getName(), args[i]);
             }
-            var key = Arrays.stream(keys).map(paramMap::get).reduce("", (s1, s2) -> s1 + "::" + s2);
+            var key = Arrays.stream(keys).map(k -> getValue(k, paramMap)).reduce("", (s1, s2) -> s1 + "::" + s2);
             builder.append(key);
         }
         return builder.toString();
+    }
+    @SneakyThrows
+    private Object getValue(String key, HashMap<String, Object> paramMap) {
+        String[] fields = key.split("\\.");
+        if(fields.length == 1) {
+            return paramMap.get(key);
+        }
+        Object obj = paramMap.get(fields[0]);
+        fields[1] = StringUtils.capitalize(fields[1]);
+        return obj.getClass().getMethod("get" + fields[1]).invoke(obj);
     }
 }
