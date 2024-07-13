@@ -21,4 +21,8 @@ public class CacheManager {
         return cacheMap.containsKey(key);
     }
 
+    public void evict(String key) {
+        cacheMap.remove(key);
+    }
+
 }
