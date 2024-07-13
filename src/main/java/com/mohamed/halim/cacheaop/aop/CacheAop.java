@@ -50,6 +50,19 @@ public class CacheAop {
         cacheManager.evict(key);
     }
 
+    @Around("@annotation(CachedRefresh)")
+    public Object CachedRefresh(ProceedingJoinPoint joinPoint) throws Throwable {
+        Method method = ((MethodSignature) joinPoint.getSignature()).getMethod();
+        var cacheAnnotation = method.getAnnotation(CachedRefresh.class);
+        var key = constructKey(cacheAnnotation.prefix(), cacheAnnotation.key(), method, joinPoint.getArgs());
+
+        Object res = joinPoint.proceed();
+        cacheManager.put(key, res);
+        log.info("refresh cache: {}", key);
+        return res;
+
+    }
+
     private String constructKey(String prefix, String[] keys, Method method, Object[] args) {
         StringBuilder builder = new StringBuilder();
         if (StringUtils.isBlank(prefix)) {
@@ -71,10 +84,11 @@ public class CacheAop {
         }
         return builder.toString();
     }
+
     @SneakyThrows
     private Object getValue(String key, HashMap<String, Object> paramMap) {
         String[] fields = key.split("\\.");
-        if(fields.length == 1) {
+        if (fields.length == 1) {
             return paramMap.get(key);
         }
         Object obj = paramMap.get(fields[0]);
