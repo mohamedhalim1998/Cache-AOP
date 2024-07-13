@@ -31,3 +31,6 @@ build/
 
 ### VS Code ###
 .vscode/
+/data/
+/src/main/java/com/mohamed/halim/cacheaop/service/SampleService.java
+/src/main/java/com/mohamed/halim/cacheaop/service/SampleRunner.java
